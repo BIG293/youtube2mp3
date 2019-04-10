@@ -1,3 +1,4 @@
 /ENV
 /downloads
-*.mp3
+to-download.txt
+/.vscode/settings.json
