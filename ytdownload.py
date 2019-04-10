@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 import youtube_dl
 
 YLD_OPTIONS = {
-    'outtmpl': 'downloads/%(title)s-%(id)s.%(ext)s',
+    'outtmpl': 'downloads/%(title)s.%(ext)s',
     'format': 'bestaudio/best',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
