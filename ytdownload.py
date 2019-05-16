@@ -11,7 +11,6 @@ YLD_OPTIONS = {
     }],
 }
 
-
 def download_songs():
     file_list = open('./to-download.txt', 'r')
 
@@ -20,6 +19,5 @@ def download_songs():
         for url in file_list:
             url_list.append(url)
         ydl.download(url_list)
-
 
 download_songs()
