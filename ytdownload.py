@@ -17,6 +17,7 @@ YLD_OPTIONS = {
 
 ENTRY_DIR = 'entriesjson'
 DOWNLOADS_DIR = 'downloads'
+TO_DOWNLOAD_PATH = './to-download.txt'
 
 
 def extract_url(entry):
@@ -32,6 +33,12 @@ def title_already_contains_artist(entry):
 
 
 def compute_out_tmpl(info, options):
+    try:
+        os.stat(DOWNLOADS_DIR)
+    except Exception as e:
+        print(e)
+        os.mkdir(DOWNLOADS_DIR)
+        
     if has_artist(info) and not title_already_contains_artist(info):
         options['outtmpl'] = 'downloads/%(artist)s - %(title)s.%(ext)s'
     else:
@@ -40,34 +47,39 @@ def compute_out_tmpl(info, options):
 
 
 def download_songs():
-    file_list = open('./to-download.txt', 'r')
+    try:
+        os.stat(TO_DOWNLOAD_PATH)
+    except Exception as e:
+        print(e)
+        open(TO_DOWNLOAD_PATH,"w+")
+
+    file_list = open(TO_DOWNLOAD_PATH, 'r')
 
     for url in file_list:
-        try:
-            url_info = ydl().extract_info(url, download=False)
+        url_info = ydl().extract_info(url, download=False)
 
-            entries = []
+        entries = []
 
-            if url_info.has_key('entries'):
-                entries = url_info['entries']
-            else:
-                entries = [url_info]
+        if url_info.has_key('entries'):
+            entries = url_info['entries']
+        else:
+            entries = [url_info]
 
-            for entry in entries:
-                title = entry['title']
+        for entry in entries:
+            t = entry['title']
 
-                try:
-                    os.stat(ENTRY_DIR)
-                except:
-                    os.mkdir(ENTRY_DIR)
+            try:
+                os.stat(ENTRY_DIR)
+            except Exception as e:
+                print(e)
+                os.mkdir(ENTRY_DIR)
 
-                with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
-                    json.dump(entry, outfile)
+            title = re.sub('[<>:"/\|?*]', '', t)
+            with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
+                json.dump(entry, outfile)
 
-                ydl(compute_out_tmpl(entry, YLD_OPTIONS)).download(
-                    [extract_url(entry)])
-        except:
-            print 'AN ERROR HAS OCCURED DOWNLOADING: % s' % (url)
+            ydl(compute_out_tmpl(entry, YLD_OPTIONS)).download(
+                [extract_url(entry)])
 
 
 def improve_file_names():
@@ -80,8 +92,9 @@ def improve_file_names():
             name_ext = name + '.' +ext
             os.rename('% s/% s' % (DOWNLOADS_DIR, filename),
                       '% s/% s' % (DOWNLOADS_DIR, name_ext))
-        except:
-            print 'AN ERROR HAS OCCURED RENAMING: % s' % (filename)
+        except Exception as e:
+            print(e)
+            print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
 
 
 download_songs()
