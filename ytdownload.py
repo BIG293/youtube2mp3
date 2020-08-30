@@ -25,7 +25,7 @@ def extract_url(entry):
 
 
 def has_artist(entry):
-    return entry.has_key('artist') and entry['artist'] is not None
+    return 'artist' in entry and entry['artist'] is not None
 
 
 def title_already_contains_artist(entry):
@@ -60,7 +60,7 @@ def download_songs():
 
         entries = []
 
-        if url_info.has_key('entries'):
+        if 'entries' in url_info:
             entries = url_info['entries']
         else:
             entries = [url_info]
@@ -88,7 +88,7 @@ def improve_file_names():
             dst = re.sub('[\[|(].*?[\]|)]', '', filename)
             splitted = dst.split('.')
             ext = splitted.pop(len(splitted) - 1)
-            name = string.join(splitted).strip()
+            name = ''.join(splitted).strip()
             name_ext = name + '.' +ext
             os.rename('% s/% s' % (DOWNLOADS_DIR, filename),
                       '% s/% s' % (DOWNLOADS_DIR, name_ext))
