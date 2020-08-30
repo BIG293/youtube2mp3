@@ -38,7 +38,7 @@ def compute_out_tmpl(info, options):
     except Exception as e:
         print(e)
         os.mkdir(DOWNLOADS_DIR)
-        
+
     if has_artist(info) and not title_already_contains_artist(info):
         options['outtmpl'] = 'downloads/%(artist)s - %(title)s.%(ext)s'
     else:
@@ -51,7 +51,7 @@ def download_songs():
         os.stat(TO_DOWNLOAD_PATH)
     except Exception as e:
         print(e)
-        open(TO_DOWNLOAD_PATH,"w+")
+        open(TO_DOWNLOAD_PATH, "w+")
 
     file_list = open(TO_DOWNLOAD_PATH, 'r')
 
@@ -78,8 +78,8 @@ def download_songs():
             with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
                 json.dump(entry, outfile)
 
-            ydl(compute_out_tmpl(entry, YLD_OPTIONS)).download(
-                [extract_url(entry)])
+            ydl(compute_out_tmpl(entry,
+                                 YLD_OPTIONS)).download([extract_url(entry)])
 
 
 def improve_file_names():
@@ -89,7 +89,7 @@ def improve_file_names():
             splitted = dst.split('.')
             ext = splitted.pop(len(splitted) - 1)
             name = ''.join(splitted).strip()
-            name_ext = name + '.' +ext
+            name_ext = name + '.' + ext
             os.rename('% s/% s' % (DOWNLOADS_DIR, filename),
                       '% s/% s' % (DOWNLOADS_DIR, name_ext))
         except Exception as e:
