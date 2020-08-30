@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 import json
 import os
 import re
-import string
 from youtube_dl import YoutubeDL as ydl
 
 YLD_OPTIONS = {
@@ -35,8 +34,8 @@ def title_already_contains_artist(entry):
 def compute_out_tmpl(info, options):
     try:
         os.stat(DOWNLOADS_DIR)
-    except Exception as e:
-        print(e)
+    except Exception as err:
+        print(err)
         os.mkdir(DOWNLOADS_DIR)
 
     if has_artist(info) and not title_already_contains_artist(info):
@@ -49,8 +48,8 @@ def compute_out_tmpl(info, options):
 def download_songs():
     try:
         os.stat(TO_DOWNLOAD_PATH)
-    except Exception as e:
-        print(e)
+    except Exception as err:
+        print(err)
         open(TO_DOWNLOAD_PATH, "w+")
 
     file_list = open(TO_DOWNLOAD_PATH, 'r')
@@ -66,15 +65,15 @@ def download_songs():
             entries = [url_info]
 
         for entry in entries:
-            t = entry['title']
+            title = entry['title']
 
             try:
                 os.stat(ENTRY_DIR)
-            except Exception as e:
-                print(e)
+            except Exception as err:
+                print(err)
                 os.mkdir(ENTRY_DIR)
 
-            title = re.sub('[<>:"/\|?*]', '', t)
+            title = re.sub('[<>:"/\|?*]', '', title)
             with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
                 json.dump(entry, outfile)
 
@@ -92,8 +91,8 @@ def improve_file_names():
             name_ext = name + '.' + ext
             os.rename('% s/% s' % (DOWNLOADS_DIR, filename),
                       '% s/% s' % (DOWNLOADS_DIR, name_ext))
-        except Exception as e:
-            print(e)
+        except Exception as err:
+            print(err)
             print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
 
 
