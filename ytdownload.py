@@ -89,11 +89,11 @@ def download_songs():
 def set_metadata(entry):
     audiofile = eyed3.load(
                 f'./{DOWNLOADS_DIR}/{entry["title"]}.mp3')
-    if(len(entry['thumbnails']) > 0):
+    if len(entry['thumbnails']) > 0:
         max_index = max(range(
             len(entry['thumbnails'])), key=lambda index: entry['thumbnails'][index]['width'])
         response = requests.get(entry['thumbnails'][max_index]['url'])
-        if(response.ok):
+        if response.ok:
             audiofile.tag.images.set(
                 3, response.content, 'image/png')
 
