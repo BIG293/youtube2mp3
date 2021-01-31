@@ -2,7 +2,16 @@ from __future__ import unicode_literals
 import json
 import os
 import re
+import shutil
+import requests
+import eyed3
 from youtube_dl import YoutubeDL as ydl
+
+
+ENTRY_DIR = 'entriesjson'
+DOWNLOADS_DIR = 'downloads'
+TO_DOWNLOAD_PATH = './to-download.txt'
+NEEDS_ACTION = 'NEEDS_ACTION!!!a'
 
 YLD_OPTIONS = {
     'format':
@@ -12,11 +21,8 @@ YLD_OPTIONS = {
         'preferredcodec': 'mp3',
         'preferredquality': '192',
     }],
+    'outtmpl': 'downloads/%(title)s.%(ext)s'
 }
-
-ENTRY_DIR = 'entriesjson'
-DOWNLOADS_DIR = 'downloads'
-TO_DOWNLOAD_PATH = './to-download.txt'
 
 
 def extract_url(entry):
@@ -32,12 +38,6 @@ def title_already_contains_artist(entry):
 
 
 def compute_out_tmpl(info, options):
-    try:
-        os.stat(DOWNLOADS_DIR)
-    except Exception as err:
-        print(err)
-        os.mkdir(DOWNLOADS_DIR)
-
     if has_artist(info) and not title_already_contains_artist(info):
         options['outtmpl'] = 'downloads/%(artist)s - %(title)s.%(ext)s'
     else:
@@ -77,9 +77,38 @@ def download_songs():
             with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
                 json.dump(entry, outfile)
 
-            ydl(compute_out_tmpl(entry,
-                                 YLD_OPTIONS)).download([extract_url(entry)])
+            try:
+                os.stat(DOWNLOADS_DIR)
+            except Exception as err:
+                print(err)
+                os.mkdir(DOWNLOADS_DIR)
 
+            ydl(YLD_OPTIONS).download([extract_url(entry)])
+            set_metadata(entry)
+
+def set_metadata(entry):
+    audiofile = eyed3.load(
+                f'./{DOWNLOADS_DIR}/{entry["title"]}.mp3')
+    if(len(entry['thumbnails']) > 0):
+        max_index = max(range(
+            len(entry['thumbnails'])), key=lambda index: entry['thumbnails'][index]['width'])
+        response = requests.get(entry['thumbnails'][max_index]['url'])
+        if(response.ok):
+            audiofile.tag.images.set(
+                3, response.content, 'image/png')
+
+    audiofile.tag.artist = entry['artist']
+    audiofile.tag.title = entry['title']
+    audiofile.tag.save()
+
+    if(not has_artist(entry) or title_already_contains_artist(entry)):
+        try:
+            os.stat(NEEDS_ACTION)
+        except Exception as err:
+            print(err)
+            os.mkdir(NEEDS_ACTION)
+        shutil.move(f'./{NEEDS_ACTION}/{entry}',
+                    f'./{NEEDS_ACTION}/{entry}')
 
 def improve_file_names():
     for _count, filename in enumerate(os.listdir(DOWNLOADS_DIR)):
