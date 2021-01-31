@@ -11,7 +11,7 @@ from youtube_dl import YoutubeDL as ydl
 ENTRY_DIR = 'entriesjson'
 DOWNLOADS_DIR = 'downloads'
 TO_DOWNLOAD_PATH = './to-download.txt'
-NEEDS_ACTION = 'NEEDS_ACTION!!!a'
+NEEDS_ACTION = 'NEEDS_ACTION!!!'
 
 YLD_OPTIONS = {
     'format':
