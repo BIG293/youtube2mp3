@@ -11,7 +11,7 @@ from youtube_dl import YoutubeDL as ydl
 ENTRY_DIR = 'entriesjson'
 DOWNLOADS_DIR = 'downloads'
 TO_DOWNLOAD_PATH = './to-download.txt'
-NEEDS_ACTION = 'NEEDS_ACTION!!!'
+NEEDS_ACTION = 'downloads/NEEDS_ACTION!!!'
 
 YLD_OPTIONS = {
     'format':
@@ -86,9 +86,10 @@ def download_songs():
             ydl(YLD_OPTIONS).download([extract_url(entry)])
             set_metadata(entry)
 
+
 def set_metadata(entry):
     audiofile = eyed3.load(
-                f'./{DOWNLOADS_DIR}/{entry["title"]}.mp3')
+        f'./{DOWNLOADS_DIR}/{entry["title"]}.mp3')
     if len(entry['thumbnails']) > 0:
         max_index = max(range(
             len(entry['thumbnails'])), key=lambda index: entry['thumbnails'][index]['width'])
@@ -97,8 +98,10 @@ def set_metadata(entry):
             audiofile.tag.images.set(
                 3, response.content, 'image/png')
 
-    audiofile.tag.artist = entry['artist']
-    audiofile.tag.title = entry['title']
+    if 'artist' in entry:
+        audiofile.tag.artist = entry['artist']
+    if 'title' in entry:
+        audiofile.tag.title = entry['title']
     audiofile.tag.save()
 
     if(not has_artist(entry) or title_already_contains_artist(entry)):
@@ -107,23 +110,25 @@ def set_metadata(entry):
         except Exception as err:
             print(err)
             os.mkdir(NEEDS_ACTION)
-        shutil.move(f'./{NEEDS_ACTION}/{entry}',
-                    f'./{NEEDS_ACTION}/{entry}')
+        title = entry['title']
+        shutil.move(f'{DOWNLOADS_DIR}/{title}.mp3',
+                    f'{NEEDS_ACTION}')
 
-def improve_file_names():
-    for _count, filename in enumerate(os.listdir(DOWNLOADS_DIR)):
+
+def improve_file_names(directory):
+    for _count, filename in enumerate(os.listdir(directory)):
         try:
-            dst = re.sub('[\[|(].*?[\]|)]', '', filename)
-            splitted = dst.split('.')
-            ext = splitted.pop(len(splitted) - 1)
-            name = ''.join(splitted).strip()
-            name_ext = name + '.' + ext
-            os.rename('% s/% s' % (DOWNLOADS_DIR, filename),
-                      '% s/% s' % (DOWNLOADS_DIR, name_ext))
+            dst=re.sub('[\[|(].*?[\]|)]', '', filename)
+            splitted=dst.split('.')
+            ext=splitted.pop(len(splitted) - 1)
+            name=''.join(splitted).strip()
+            name_ext=name + '.' + ext
+            os.rename('% s/% s' % (directory, filename),
+                      '% s/% s' % (directory, name_ext))
         except Exception as err:
             print(err)
             print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
 
 
 download_songs()
-improve_file_names()
+improve_file_names(DOWNLOADS_DIR)
