@@ -13,7 +13,7 @@
 - Install ffmpeg via chocolate
     - execute command ```choco install ffmpeg```
 
-- execute command ```git clone https://simonepassaretti@bitbucket.org/simonepassaretti/youtube-mp3.git``` in order to clone the repository
+- execute command ```git clone https://github.com/BIG293/youtube2mp3.git``` in order to clone the repository
 
 # Execution
 
