@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import json
 import os
 import re
@@ -10,7 +11,6 @@ from youtube_dl import YoutubeDL as ydl
 
 ENTRY_DIR = 'entriesjson'
 DOWNLOADS_DIR = 'downloads'
-TO_DOWNLOAD_PATH = './to-download.txt'
 NEEDS_ACTION = 'downloads/NEEDS_ACTION!!!'
 
 YLD_OPTIONS = {
@@ -21,6 +21,7 @@ YLD_OPTIONS = {
         'preferredcodec': 'mp3',
         'preferredquality': '192',
     }],
+    'cachedire': False,
     'outtmpl': 'downloads/%(title)s.%(ext)s'
 }
 
@@ -46,45 +47,38 @@ def compute_out_tmpl(info, options):
 
 
 def download_songs():
-    try:
-        os.stat(TO_DOWNLOAD_PATH)
-    except Exception as err:
-        print(err)
-        open(TO_DOWNLOAD_PATH, "w+")
+    url = input('Enter the YouTube url to download as mp3 (songs or playlist): ')
 
-    file_list = open(TO_DOWNLOAD_PATH, 'r')
+    url_info = ydl().extract_info(url, download=False)
 
-    for url in file_list:
-        url_info = ydl().extract_info(url, download=False)
+    entries = []
 
-        entries = []
+    if 'entries' in url_info:
+        entries = url_info['entries']
+    else:
+        entries = [url_info]
 
-        if 'entries' in url_info:
-            entries = url_info['entries']
-        else:
-            entries = [url_info]
+    for entry in entries:
+        title = entry['title']
 
-        for entry in entries:
-            title = entry['title']
+        try:
+            os.stat(ENTRY_DIR)
+        except Exception as err:
+            print(err)
+            os.mkdir(ENTRY_DIR)
 
-            try:
-                os.stat(ENTRY_DIR)
-            except Exception as err:
-                print(err)
-                os.mkdir(ENTRY_DIR)
+        title = re.sub('[<>:"/\|?*]', '', title)
+        with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
+            json.dump(entry, outfile)
 
-            title = re.sub('[<>:"/\|?*]', '', title)
-            with open("% s/% s.json" % (ENTRY_DIR, title), 'w') as outfile:
-                json.dump(entry, outfile)
+        try:
+            os.stat(DOWNLOADS_DIR)
+        except Exception as err:
+            print(err)
+            os.mkdir(DOWNLOADS_DIR)
 
-            try:
-                os.stat(DOWNLOADS_DIR)
-            except Exception as err:
-                print(err)
-                os.mkdir(DOWNLOADS_DIR)
-
-            ydl(YLD_OPTIONS).download([extract_url(entry)])
-            set_metadata(entry)
+        ydl(YLD_OPTIONS).download([extract_url(entry)])
+        set_metadata(entry)
 
 
 def set_metadata(entry):
@@ -116,15 +110,14 @@ def set_metadata(entry):
 
 
 def improve_file_names(directory):
-    for _count, filename in enumerate(os.listdir(directory)):
+    for filename in os.listdir(directory):
         try:
-            dst=re.sub('[\[|(].*?[\]|)]', '', filename)
-            splitted=dst.split('.')
-            ext=splitted.pop(len(splitted) - 1)
-            name=''.join(splitted).strip()
-            name_ext=name + '.' + ext
-            os.rename('% s/% s' % (directory, filename),
-                      '% s/% s' % (directory, name_ext))
+            dst = re.sub('[\[|(].*?[\]|)]', '', filename)
+            splitted = dst.split('.')
+            ext = splitted.pop(len(splitted) - 1)
+            name = ''.join(splitted).strip()
+            name_ext = name + '.' + ext
+            os.rename(f'{directory}/{filename}', f'{directory}/{name_ext}')
         except Exception as err:
             print(err)
             print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
