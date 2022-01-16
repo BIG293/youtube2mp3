@@ -62,7 +62,6 @@ def download_songs():
         try:
             os.stat(ENTRY_DIR)
         except Exception as err:
-            print(err)
             os.mkdir(ENTRY_DIR)
 
         title = re.sub('[<>:"/\|?*]', '', title)
@@ -122,6 +121,7 @@ def improve_file_names(directory):
         except Exception as err:
             print(err)
             print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
+            continue
 
 
 if __name__ == '__main__':
