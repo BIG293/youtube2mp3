@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import json
 import os
 import re
@@ -74,23 +72,27 @@ def download_songs():
         try:
             os.stat(DOWNLOADS_DIR)
         except Exception as err:
-            print(err)
             os.mkdir(DOWNLOADS_DIR)
 
-        ydl(YLD_OPTIONS).download([extract_url(entry)])
-        set_metadata(entry)
+        try:
+            ydl(YLD_OPTIONS).download([extract_url(entry)])
+        except Exception as e:
+            print(e)
+            continue
+
+        set_metadata(entry, title)
 
 
-def set_metadata(entry):
-    audiofile = eyed3.load(
-        f'./{DOWNLOADS_DIR}/{entry["title"]}.mp3')
-    if len(entry['thumbnails']) > 0:
-        max_index = max(range(
-            len(entry['thumbnails'])), key=lambda index: entry['thumbnails'][index]['width'])
+def set_metadata(entry, title):
+    audiofile = eyed3.load(f'./{DOWNLOADS_DIR}/{title}.mp3')
+    
+    thumbnails_len = len(entry['thumbnails'])
+    if thumbnails_len > 0:
+        def get_width(index): return entry['thumbnails'][index]['width']
+        max_index = max(range(thumbnails_len), key=get_width)
         response = requests.get(entry['thumbnails'][max_index]['url'])
         if response.ok:
-            audiofile.tag.images.set(
-                3, response.content, 'image/png')
+            audiofile.tag.images.set(3, response.content, 'image/png')
 
     if 'artist' in entry:
         audiofile.tag.artist = entry['artist']
@@ -102,9 +104,8 @@ def set_metadata(entry):
         try:
             os.stat(NEEDS_ACTION)
         except Exception as err:
-            print(err)
             os.mkdir(NEEDS_ACTION)
-        title = entry['title']
+
         shutil.move(f'{DOWNLOADS_DIR}/{title}.mp3',
                     f'{NEEDS_ACTION}')
 
@@ -123,5 +124,6 @@ def improve_file_names(directory):
             print('AN ERROR HAS OCCURED RENAMING: % s' % (filename))
 
 
-download_songs()
-improve_file_names(DOWNLOADS_DIR)
+if __name__ == '__main__':
+    download_songs()
+    improve_file_names(DOWNLOADS_DIR)
