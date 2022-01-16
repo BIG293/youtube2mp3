@@ -1,6 +1,6 @@
 # Installation guide
 
-- Install Python 3.7
+- Install Python >=3.7
 
 - Install youtube-dl via pip using command ```pip install youtube-dl```
 - Install eyed3 via pip using command ```pip install eyed3```
