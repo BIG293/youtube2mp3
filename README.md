@@ -19,3 +19,4 @@
 
 - Run the ytdownload.py from terminal and enter the url to download
 - The script automatically downloads the file or the playlist entered and tries to rename the file and sets metadata of the mp3. If something goes wrong it moves the mp3 to the "NEED_ACTION!!!" folder. In this way, if you want, you can execute some manual actions to edit your downloaded mp3.
+- For debbugging purpose it saves for each songs, on "entriesjson" folder, a json with the corresponding information downloaded from YouTube
